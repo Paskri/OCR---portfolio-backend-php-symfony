@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Éditer un projet{% endblock %}
+
+{% block pageTitle %}Éditer un projet{% endblock %}
+
+{% block body %}
+{{ form(form) }}
+{% endblock %}
+{% block javascripts %}
+<script>
+
+function addButtons(child) {
+        let addBtn = document.createElement('button')
+        addBtn.classList.add('text-primary', 'p-1', 'mr-1')
+        addBtn.setAttribute('id', 'addBtn')
+        addBtn.innerHTML = '+ Ajouter ' + name
+        child.appendChild(addBtn)
+        let removeBtn = document.createElement('button')
+        removeBtn.classList.add('text-danger', 'p-1')
+        removeBtn.setAttribute('id', 'removeBtn')
+        removeBtn.innerHTML = "- Supprimer " + name
+        child.appendChild(removeBtn)
+}
+
+function upgradeFields(id, name, nodeType, tag) {
+    console.log('name : ', name)
+    let idName = id.replace('#work_', '')
+    let content = document.querySelector(id)
+    let children = content.querySelectorAll(nodeType)
+    console.log(children)
+    children.forEach((child, index) => {
+        let newImage = child.cloneNode(true)
+        child.querySelector(tag).innerHTML = name + ' n°' + (index+1) + '' 
+        let addBtn = document.createElement('button')
+        addBtn.classList.add('text-primary', 'p-1', 'mr-1')
+        addBtn.setAttribute('id', 'addBtn')
+        addBtn.innerHTML = '+ Ajouter ' + name
+        child.appendChild(addBtn)
+        removeBtn = document.createElement('button')
+        removeBtn.classList.add('text-danger', 'p-1')
+        removeBtn.setAttribute('id', 'removeBtn')
+        removeBtn.innerHTML = "- Supprimer " + name
+        child.appendChild(removeBtn)
+        //actions qd click
+        addListeners(addBtn, removeBtn, name, child, index+1, nodeType, tag) 
+    })
+}
+
+function insertAfter(newNode, existingNode) {
+    existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
+}
+
+function addListeners(addBtn, removeBtn, name, child, index, nodeType, tag) {
+    addBtn.addEventListener("click", ((e) => {
+        e.preventDefault()
+
+        console.log('child :', child)
+
+        let prototype = e.target.parentNode.parentNode.dataset.prototype
+        prototype = prototype.replace(/__name__/g, index+1)
+        let newImage = document.createElement('html')
+        newImage.innerHTML = prototype
+        let newForm = newImage.querySelector(nodeType)
+        addButtons(newForm)
+
+        console.log('newForm : ', newForm)
+
+        if (tag==='label') {
+            let textarea = newImage.querySelector('textarea')
+            textarea.innerHTML=''
+            textarea.setAttribute('placeholder', 'Nouvelle entrée')
+        } else { //legend
+            let control = newImage.querySelector('.form-control')
+            control.setAttribute('value', '')
+            control.setAttribute('placeholder', 'Nouveau titre')
+            let control2 = control.parentNode.nextElementSibling.querySelector('.form-control')
+            control2.setAttribute('value', '')
+            control2.setAttribute('placeholder', 'Nouvelle image')
+        }
+
+        insertAfter(newImage, e.target.parentNode)
+        newAddBtn = newImage.querySelector('#addBtn')
+        newRemoveBtn = newImage.querySelector('#removeBtn')
+        addListeners(newAddBtn, newRemoveBtn, name, child, index+1, nodeType, tag) // manque 
+        parent = child.parentNode.getAttribute('id').replace('work_', '')
+        updateIndexes(parent, name, nodeType, tag)
+        
+    }))
+    removeBtn.addEventListener("click", e => {
+        e.preventDefault()
+        parent = child.parentNode.getAttribute('id').replace('work_', '')
+        e.target.parentNode.remove()
+        updateIndexes(parent, name, nodeType, tag)
+    })
+}
+
+function updateIndexes(idName, name, nodeType, tag) { //mobile ou desktop
+    console.log(idName, name, nodeType, tag)
+    let desktopContent = document.querySelector('#work_' + idName)
+    let children = desktopContent.querySelectorAll(nodeType)
+    children.forEach((child, index) => {
+        //legend
+        if (tag==='label') {
+            let label = child.querySelector('label')
+            label.setAttribute('for', 'work_' + idName + '_' + index)
+            label.innerHTML = name + ' n°' + (index+1)
+            let textarea = child.querySelector('textarea')
+            textarea.setAttribute('id', 'work_' + idName + '_' + index)
+            textarea.setAttribute('name', 'work[' + idName + ']['+ index + ']')
+        } else {
+            let legend = child.querySelector('legend')
+            legend.innerHTML = name + ' n°' + (index+1)
+            let div = legend.nextElementSibling
+            div.setAttribute('id', 'work_' + idName + '_' + index)
+            let label = div.querySelector('.form-label')
+            label.setAttribute('for', 'work_' + idName + '_' + index + '_title')
+            let control = div.querySelector('.form-control')
+            control.setAttribute('id', 'work_' + idName + '_' + index + '_title')
+            control.setAttribute('name', 'work[' + idName + ']['+ index + '][title]')
+            let label2 = control.parentNode.nextElementSibling.querySelector('.form-label')
+            label2.setAttribute('for', 'work_' + idName + '_' + index + '_img')
+            let control2 = control.parentNode.nextElementSibling.querySelector('.form-control')
+            control2.setAttribute('id', 'work_' + idName + '_' + index + '_img')
+            control2.setAttribute('name', 'work[' + idName + ']['+ index + '][img]')
+        }  
+    })
+}
+
+window.addEventListener("DOMContentLoaded", (event) => {
+    //                  id          nome      nodeType     tag
+    upgradeFields('#work_desktop', 'Image', 'fieldset', 'legend')
+    upgradeFields('#work_mobile', 'Image', 'fieldset', 'legend')
+    upgradeFields('#work_skills', 'Compétence', 'div', 'label')
+    upgradeFields('#work_comments', 'Commentaire', 'div', 'label')
+});
+</script>
+{% endblock %}

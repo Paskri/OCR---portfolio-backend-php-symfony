@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Skills{% endblock %}
+{% block pageTitle %}Skills{% endblock %}
+{% block body %} 
+    <table class="table">
+        <tr class="table table-sm table-dark">
+            <td>Id</td>
+            <td>Name</td>
+            <td>Niveau</td>
+            <td>Image</td>
+            <td>Couleur</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        {% for skill in skills %}
+        <tr class="table-{% if loop.index is odd %}light{% else %}active{% endif %} ">
+            <td>{{ skill.id }}</td>
+            <td>{{ skill.name }}</td>
+            <td>{{ skill.level }}</td>
+            <td>{{ skill.img }}</td>
+            <td>{{ skill.bgcolor }}</td>
+            <td><a href="/skills/edit/{{ skill.id }}"><button class="text-primary p-1 mr-1">+ Editer</button></a></td>
+            <td><a href="/skills/delete/{{ skill.id }}"><button class="text-danger p-1 mr-1">- Supprimer</button></a></td>
+            {% if skill.id != 1 %}
+            <td><a href="/skills/moveup/{{ skill.id }}" class="btn btn-secondary">  &uarr;  </a></td>
+            {% else %}
+            <td></td>
+            {% endif %}
+            {% if skill.id != skills|length  %}
+            <td><a href="/skills/movedown/{{ skill.id }}" class="btn btn-secondary">  &darr;  </a></td>
+            {% else %}
+            <td></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
